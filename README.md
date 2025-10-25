@@ -1,3 +1,3 @@
-# Tauri + React + Typescript
+# Tauri + Rust + Typescript
 
-![Project Screenshot](public/readme-image.png)
+![Project Screenshot](public/readme-image2.png)
