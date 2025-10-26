@@ -19,6 +19,9 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(
             tauri_plugin_log::Builder::new()
+                .level(log::LevelFilter::Info)
+                .level_for("tao", log::LevelFilter::Warn)
+                .level_for("reqwest::retry", log::LevelFilter::Warn)
                 .targets([
                     tauri_plugin_log::Target::new(
                         tauri_plugin_log::TargetKind::Webview,
@@ -70,7 +73,9 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             greet,
             elevenlabs::get_models,
-            elevenlabs::get_user_data
+            elevenlabs::get_user_data,
+            elevenlabs::get_voices,
+            elevenlabs::stream_tts
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

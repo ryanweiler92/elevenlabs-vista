@@ -3,19 +3,12 @@ import { appDataDir } from "@tauri-apps/api/path";
 import { loadElevenLabsApiKey } from "@/lib/secure-store2";
 import { invoke } from "@tauri-apps/api/core";
 import { logUserState } from "@/stores/userStore";
-
-type UserData = {
-  first_name: string;
-  character_limit: number;
-  character_count: number;
-  next_character_count_reset_unix: number;
-  voice_limit: number;
-  voice_slots_used: number;
-};
+import { logVoices } from "@/stores/voiceStore";
+import { sendSampleTTSRequest } from "@/stores/ttsStore";
 
 export function TestButton() {
   const consoleTest = async () => {
-    logUserState();
+    await sendSampleTTSRequest();
   };
 
   return <Button onClick={consoleTest}>Test Button</Button>;

@@ -15,8 +15,7 @@
         "title": "elevenlabs-vista",
         "width": 1400,
         "height": 900,
-        "resizable": true,
-        "focus": false
+        "resizable": true
       }
     ],
     "security": {

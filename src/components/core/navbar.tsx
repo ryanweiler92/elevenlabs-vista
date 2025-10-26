@@ -2,6 +2,7 @@
 import * as React from "react";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState, useRef } from "react";
+import { Link } from "react-router-dom";
 import {
   NavigationMenu,
   NavigationMenuItem,
@@ -16,6 +17,7 @@ import { cn } from "@/lib/utils";
 import { SettingsIcon } from "lucide-react";
 import { SettingsDialog } from "./settings-dialog";
 import { TestButton } from "./test-button";
+import { useUserStore } from "@/stores/userStore";
 
 // Simple logo component for the navbar
 const Logo = (props: React.SVGAttributes<SVGElement>) => {
@@ -97,11 +99,11 @@ export interface Navbar01Props extends React.HTMLAttributes<HTMLElement> {
 }
 
 const defaultNavigationLinks: Navbar01NavLink[] = [
-  { href: "#", label: "Text-to-Speech" },
-  { href: "#", label: "Speech-To-Text" },
-  { href: "#", label: "Voices" },
-  { href: "#", label: "My Files" },
-  { href: "#", label: "My Projects" },
+  { href: "#", label: "TTS" },
+  { href: "#", label: "STS" },
+  { href: "/voices", label: "Voices" },
+  { href: "#", label: "Files" },
+  { href: "#", label: "Projects" },
   { href: "#", label: "Test" },
 ];
 
@@ -119,6 +121,25 @@ export const Navbar = React.forwardRef<HTMLElement, Navbar01Props>(
     const [isMobile, setIsMobile] = useState(false);
     const [openSettings, setOpenSettings] = useState(false);
     const containerRef = useRef<HTMLElement>(null);
+
+    const characterLimit = useUserStore(
+      (state) => state.userData.character_limit
+    );
+    const charactersUsed = useUserStore(
+      (state) => state.userData.character_count
+    );
+
+    const usagePercentage =
+      characterLimit > 0
+        ? Math.min((charactersUsed / characterLimit) * 100, 100)
+        : 0;
+
+    // Determine color based on usage
+    const getUsageColor = () => {
+      if (usagePercentage >= 90) return "text-destructive";
+      if (usagePercentage >= 75) return "text-orange-500";
+      return "text-muted-foreground";
+    };
 
     useEffect(() => {
       const checkWidth = () => {
@@ -186,8 +207,8 @@ export const Navbar = React.forwardRef<HTMLElement, Navbar01Props>(
                               <TestButton />
                             </div>
                           ) : (
-                            <button
-                              onClick={(e) => e.preventDefault()}
+                            <Link
+                              to={link.href}
                               className={cn(
                                 "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer no-underline",
                                 link.active
@@ -196,7 +217,7 @@ export const Navbar = React.forwardRef<HTMLElement, Navbar01Props>(
                               )}
                             >
                               {link.label}
-                            </button>
+                            </Link>
                           )}
                         </NavigationMenuItem>
                       ))}
@@ -223,23 +244,23 @@ export const Navbar = React.forwardRef<HTMLElement, Navbar01Props>(
                 <NavigationMenu className="flex">
                   <NavigationMenuList className="gap-1">
                     {navigationLinks.map((link, index) => (
-                      <NavigationMenuItem key={index}>
+                      <NavigationMenuItem key={index} className="w-full">
                         {link.label === "Test" ? (
-                          <div className="px-2">
+                          <div className="w-full px-3 py-2">
                             <TestButton />
                           </div>
                         ) : (
-                          <button
-                            onClick={(e) => e.preventDefault()}
+                          <Link
+                            to={link.href}
                             className={cn(
-                              "group inline-flex h-9 w-max items-center justify-center rounded-md px-4 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground focus:bg-accent focus:text-accent-foreground focus:outline-none disabled:pointer-events-none disabled:opacity-50 cursor-pointer no-underline",
+                              "flex w-full items-center rounded-md px-3 py-2 text-sm font-medium transition-colors hover:bg-accent hover:text-accent-foreground cursor-pointer no-underline",
                               link.active
                                 ? "bg-accent text-accent-foreground"
-                                : "text-foreground/80 hover:text-foreground"
+                                : "text-foreground/80"
                             )}
                           >
                             {link.label}
-                          </button>
+                          </Link>
                         )}
                       </NavigationMenuItem>
                     ))}
@@ -250,6 +271,39 @@ export const Navbar = React.forwardRef<HTMLElement, Navbar01Props>(
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Character Counter */}
+            <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-lg bg-secondary/50 border border-border/50 backdrop-blur-sm">
+              <div className="flex flex-col items-end gap-0.5">
+                <div className="flex items-baseline gap-1">
+                  <span
+                    className={cn(
+                      "text-sm font-semibold tabular-nums",
+                      getUsageColor()
+                    )}
+                  >
+                    {charactersUsed.toLocaleString()}
+                  </span>
+                  <span className="text-xs text-muted-foreground">/</span>
+                  <span className="text-xs text-muted-foreground tabular-nums">
+                    {characterLimit.toLocaleString()}
+                  </span>
+                </div>
+                <div className="w-full h-1 bg-muted rounded-full overflow-hidden">
+                  <div
+                    className={cn(
+                      "h-full transition-all duration-300 ease-out rounded-full",
+                      usagePercentage >= 90
+                        ? "bg-destructive"
+                        : usagePercentage >= 75
+                        ? "bg-orange-500"
+                        : "bg-primary"
+                    )}
+                    style={{ width: `${usagePercentage}%` }}
+                  />
+                </div>
+              </div>
+            </div>
+
             <Button
               variant="ghost"
               size="icon"
